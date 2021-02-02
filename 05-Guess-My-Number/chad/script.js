@@ -6,6 +6,7 @@ let highScore = 0;
 let msg;
 let won = false;
 
+//could also add several other functions to help dry out the code :)
 const displayMessage = message => {
   document.querySelector('.message').textContent = message;
 };
