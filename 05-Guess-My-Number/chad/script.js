@@ -8,7 +8,7 @@ const setMessage = function (msg) {
   document.querySelector('.message').textContent = msg;
 };
 
-const secretNumber = Math.trunc(Math.random() * 20) + 1;
+let secretNumber = Math.trunc(Math.random() * 20) + 1;
 
 //const correctNumber =
 
@@ -66,7 +66,8 @@ const newGame = document
     document.querySelector('.guess').value = '';
     document.querySelector('.number').textContent = '?';
     document.querySelector('.score').textContent = '20';
-    document.querySelector('body').style.backgroundColor = '#000';
+    document.querySelector('body').style.backgroundColor = '#222';
     document.querySelector('.message').textContent = 'Start guessing...';
     score = 20;
+    secretNumber = Math.trunc(Math.random() * 20) + 1;
   });
