@@ -6,4 +6,4 @@ const orderSet = new Set(['pasta', 'pasta', 'pizza', 'pizza', 'risotto']);
 console.log(orderSet);
 
 //pass in string - drops last 's' because its a dup
-console.log(new Set('Jonass'));
+console.log(new Set('Jonass')); //['J', 'o', 'n', 'a', 's']
