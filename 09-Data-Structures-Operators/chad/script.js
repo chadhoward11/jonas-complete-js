@@ -97,3 +97,44 @@ console.log(entries);
 for (const [day, { open, close }] of entries) {
   console.log(`On ${day} we are open at ${open}, and close at ${close}.`);
 }
+
+//----------------------------------------------------
+//Jonas notes
+//----------------------------------------------------
+console.log(`-------Jonas notes`);
+const question = new Map([
+  //note bracket here...this is an array of arrays
+  ['question', 'what is the best programming language?'],
+  [1, 'C'],
+  [2, 'Java'],
+  [3, 'JavaScript'],
+  ['correct', 3],
+  [true, 'Yay, correct'],
+  [false, 'Try again'],
+]);
+
+console.log(`-------Jonas notes 2`);
+// the above (map) 'array of arrays' is the same as
+// the response from converting an object to array:
+console.log(Object.entries(openingHours));
+
+// Convert object to map
+const hoursMap = new Map(Object.entries(openingHours));
+console.log(hoursMap);
+
+// Quiz App--------------
+//question is same as question.entries(), same as above with the object, but an object has to be converted to an iterable first
+console.log(question.get('question'));
+for (const [key, value] of question) {
+  if (typeof key === 'number') console.log(`Answer ${key}: ${value}`);
+}
+
+//const answer = Number(prompt(question.get('question')));
+const answer = 3;
+console.log(question.get(question.get('correct') === answer));
+
+//Conver map to array
+console.log([...question]);
+//console.log([...question.entries()]);  this is same as above
+console.log([...question.keys()]);
+console.log([...question.values()]);

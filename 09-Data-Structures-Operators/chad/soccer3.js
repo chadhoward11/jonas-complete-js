@@ -17,7 +17,7 @@ const gameEvents = new Map([
 //Coding Challenge #3
 //Task 1
 console.log(`------Unique Events`);
-const eventsUnique = new Set(gameEvents.values());
+const eventsUnique = [...new Set(gameEvents.values())];
 console.log(eventsUnique);
 
 //Task 2
@@ -26,7 +26,7 @@ console.log(`------Remove unfair event at minute 64`);
 console.log(gameEvents);
 
 //Task 3
-console.log(`-------Average`);
+console.log(`-------Average, my answer`);
 const arrOfGame = [...gameEvents.keys()];
 console.log(gameEvents.keys());
 let average = 0;
@@ -37,6 +37,23 @@ for (let i = 0; i < arrOfGame.length; i++) {
 average = totalDiffs / arrOfGame.length;
 console.log(
   `An event happened, on average, every ${average.toFixed(0)} minutes.`
+);
+
+//Task 3 - answer :)
+console.log(`---------Average, Jonas' answer`);
+console.log(
+  `An event happened, on average, every ${90 / gameEvents.size} minutes.`
+);
+
+//Task 3 - Jonas answer #2, account for game actually lasting 92 minutes
+// although we don't really know how long the game lasted, just that the
+// last event was at 92 ;)
+console.log(`---------Average, Jonas' answer #2`);
+const lastEventTime = [...gameEvents.keys()].pop();
+console.log(
+  `An event happened, on average, every ${
+    lastEventTime / gameEvents.size
+  } minutes.`
 );
 
 //Task 4
@@ -52,8 +69,7 @@ for (const [key, value] of gameEvents.entries()) {
   console.log(keyStr);
 }
 
-//Task 4 option
-//currently prints out the last two keys, not going to fix at the moment
+//Task 4 option - put true, false in map
 console.log(`-------OPTION - First Half or Second Half`);
 gameEvents.set(true, '[FIRST HALF]').set(false, '[SECOND HALF]');
 for (const [key, value] of gameEvents.entries()) {
@@ -74,3 +90,19 @@ for (const [minuteMark, eventName] of gameEvents.entries()) {
     console.log(outputString);
   }
 }
+
+//Task 4 - Jonas answer
+console.log(`-------Fourth - Jonas answer`);
+let half;
+for (const [minute, event] of gameEvents) {
+  half = minute <= 45 ? 'FIRST' : 'SECOND';
+  console.log(`[${half} HALF] ${minute}: ${event}`);
+}
+
+console.log(`----not spread`);
+console.log([gameEvents.keys()]);
+console.log([gameEvents.values()]);
+
+console.log(`----spread`);
+console.log([...gameEvents.keys()]);
+console.log([...gameEvents.values()]);
