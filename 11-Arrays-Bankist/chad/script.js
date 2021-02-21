@@ -127,14 +127,15 @@ const calcDisplayWithdrawals = (movementsArr) => {
   labelSumOut.textContent = `${Math.abs(withdraw)}€`;
 };
 
-const calcDisplayInterest = (movements) => {
-  const interest = movements
+const calcDisplayInterest = (currentAccount) => {
+  //pass in entire account object so we can access the individual interest rates
+  const interest = currentAccount.movements //specify movements key
     .filter((mov) => mov > 0) //get deposits
-    .map((deposit) => deposit * 0.012) //creating array of interest values
+    .map((deposit) => (deposit * currentAccount.interestRate) / 100) //pass in as 'deposit', create array of interest values
     .filter((interest, i, arr) => {
       return interest >= 1; // bank rule: only include interest >= 1
     })
-    .reduce((acc, curr) => acc + curr, 0);
+    .reduce((acc, curr) => acc + curr, 0); //reduce to total interest, passing in all deposits >1 from prev method
   labelSumInterest.textContent = `${Number(interest).toFixed(2)}€`;
 };
 
@@ -190,7 +191,7 @@ btnLogin.addEventListener('click', function (e) {
     calcDisplayBalance(currentAccount.movements);
     calcDisplayDeposits(currentAccount.movements);
     calcDisplayWithdrawals(currentAccount.movements);
-    calcDisplayInterest(currentAccount.movements);
+    calcDisplayInterest(currentAccount);
   } else {
     //PIN INCORRECT
     inputLoginPin.value = '';
