@@ -83,11 +83,16 @@ const displayAllMovements = function (movements) {
   });
 };
 
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce(function (acc, curr) {
+const calcDisplayBalance = function (currentAccount) {
+  currentAccount.balance = currentAccount.movements.reduce(function (
+    acc,
+    curr
+  ) {
     return acc + curr;
-  }, 0);
-  labelBalance.textContent = `${balance}€`;
+  },
+  0);
+
+  labelBalance.textContent = `${currentAccount.balance}€`;
 };
 
 // reg function version
@@ -150,12 +155,20 @@ const createUserNames = function (accounts) {
   });
 };
 
+const updateUI = function (currentAccount) {
+  displayAllMovements(currentAccount.movements);
+  calcDisplayBalance(currentAccount);
+  calcDisplayDeposits(currentAccount.movements);
+  calcDisplayWithdrawals(currentAccount.movements);
+  calcDisplayInterest(currentAccount);
+};
 /////////////////////////////////////////////////
 // EXECUTION
 //selectors: btnLogin, inputLoginUsername, inputLoginPin
 
 //CREATE USERNAMES
 createUserNames(accounts);
+let currentAccount = {};
 
 //LOGIN BUTTON
 //since it's a form, pressing <enter> on the login fields will also trigger
@@ -164,18 +177,30 @@ btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
 
   //GET ACCOUNT FROM USER INPUT
-  const currentAccount = accounts.find((acct) => {
+  currentAccount = accounts.find((acct) => {
+    //cannot use let or const here because we need to use the global var created above
     return acct.username === inputLoginUsername.value; //returns the object where object username matches the user input
   });
+
   console.log(`currentAccount username = ${currentAccount?.username}`);
   console.log(`pin entered: ${inputLoginPin.value}`);
+  console.log(`full array`);
+  console.log(currentAccount);
 
   //PIN IS CORRECT
   //option chaining (?) - if undefined, does nothing instead of error
   if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    //calc all movements, total, deposits, withdrawals, interest
+    updateUI(currentAccount);
+    console.log(
+      `balance = ${
+        currentAccount.balance
+      } and type=${typeof currentAccount.balance}`
+    );
+
     //display welcome message
     labelWelcome.textContent = `Welcome back, ${
-      currentAccount.owner.split(' ')[0]
+      currentAccount.owner.split(' ')[0] //split first, last, display first
     }`;
     //reveal page content
     containerApp.style.opacity = 100;
@@ -186,18 +211,37 @@ btnLogin.addEventListener('click', function (e) {
     //remove focus from pin field - blur method
     inputLoginPin.blur();
 
-    //display all movements, total, deposits, withdrawals, interest
-    displayAllMovements(currentAccount.movements);
-    calcDisplayBalance(currentAccount.movements);
-    calcDisplayDeposits(currentAccount.movements);
-    calcDisplayWithdrawals(currentAccount.movements);
-    calcDisplayInterest(currentAccount);
-  } else {
     //PIN INCORRECT
+  } else {
     inputLoginPin.value = '';
     labelWelcome.textContent = `Incorrect login, please try again...`;
     containerApp.style.opacity = 0;
     console.log('bad login');
+  }
+});
+
+// TRANSFER BUTTON
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  //receiver account is the whole account object, not just username
+  let receiverAcct = accounts.find(
+    (acct) => acct.username === inputTransferTo.value
+  ); //inputTransferTo is already a string
+  let transferAmount = Number(inputTransferAmount.value);
+
+  if (
+    transferAmount > 0 &&
+    transferAmount <= currentAccount.balance &&
+    receiverAcct && //object exists, not undef
+    receiverAcct.username !== currentAccount.username
+  ) {
+    receiverAcct.movements.push(transferAmount);
+    currentAccount.movements.push(-transferAmount);
+    inputTransferTo.value = inputTransferAmount.value = '';
+    updateUI(currentAccount);
+  } else {
+    console.log(`invalid transfer`);
   }
 });
 
