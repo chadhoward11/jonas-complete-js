@@ -162,6 +162,16 @@ const updateUI = function (currentAccount) {
   calcDisplayWithdrawals(currentAccount.movements);
   calcDisplayInterest(currentAccount);
 };
+
+const resetUI = () => {
+  containerApp.style.opacity = 0;
+  labelWelcome.textContent = 'Log in to get started';
+  inputLoanAmount.value = '';
+  inputClosePin.value = inputCloseUsername.value = '';
+  inputTransferTo.value = inputTransferAmount.value = '';
+  inputLoginPin.value = inputLoginUsername.value = '';
+  inputLoginPin.blur(); // I think only need to blur the last item set (pin in this case)
+};
 /////////////////////////////////////////////////
 // EXECUTION
 //selectors: btnLogin, inputLoginUsername, inputLoginPin
@@ -184,7 +194,7 @@ btnLogin.addEventListener('click', function (e) {
 
   console.log(`currentAccount username = ${currentAccount?.username}`);
   console.log(`pin entered: ${inputLoginPin.value}`);
-  console.log(`full array`);
+  console.log(`full array:`);
   console.log(currentAccount);
 
   //PIN IS CORRECT
@@ -225,9 +235,10 @@ btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
 
   //receiver account is the whole account object, not just username
+  //inputTransferTo is already a string
   let receiverAcct = accounts.find(
     (acct) => acct.username === inputTransferTo.value
-  ); //inputTransferTo is already a string
+  );
   let transferAmount = Number(inputTransferAmount.value);
 
   if (
@@ -245,14 +256,29 @@ btnTransfer.addEventListener('click', function (e) {
   }
 });
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// LECTURES
+// CLOSE ACCOUNT BUTTON
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
 
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
+  if (
+    currentAccount.username === inputCloseUsername.value &&
+    currentAccount.pin === Number(inputClosePin.value)
+  ) {
+    console.log(`...get close index section...`);
+    const closeAcctIndex = accounts.findIndex(function (acct, i, arr) {
+      return acct.username === currentAccount.username;
+    });
+    console.log(`Closing index ${closeAcctIndex}`);
 
-/////////////////////////////////////////////////
+    //delete account from array
+    accounts.splice(closeAcctIndex, 1);
+
+    //reset UI
+    resetUI();
+  } else {
+    console.log(`account does not match current user`);
+    inputCloseUsername.value = inputClosePin.value = '';
+    inputCloseUsername.focus(); //if I don't set focus then blur, the user pin field get focus for some reason
+    inputCloseUsername.blur();
+  }
+});
