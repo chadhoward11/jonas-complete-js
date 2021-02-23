@@ -65,10 +65,13 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 /////////////////////////////////////////////////
 // Functions
-const displayAllMovements = function (movements) {
+const displayAllMovements = function (movements, sort = false) {
   containerMovements.innerHTML = '';
 
-  movements.forEach(function (mov, i) {
+  // .slice is used to create a copy of the array so we don't mutate(sort) the original movements arr
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
       <div class="movements__row">
@@ -155,30 +158,48 @@ const createUserNames = function (accounts) {
   });
 };
 
-const updateUI = function (currentAccount) {
+const resetInputs = () => {
+  inputLoanAmount.value = '';
+  inputClosePin.value = inputCloseUsername.value = '';
+  inputTransferTo.value = inputTransferAmount.value = '';
+  inputLoginPin.value = inputLoginUsername.value = '';
+  inputLoginPin.blur(); // I think only need to blur the last item set (inputLoginPin in this case)
+};
+
+const updateUI = function () {
   displayAllMovements(currentAccount.movements);
   calcDisplayBalance(currentAccount);
   calcDisplayDeposits(currentAccount.movements);
   calcDisplayWithdrawals(currentAccount.movements);
   calcDisplayInterest(currentAccount);
+  resetInputs();
 };
 
-const resetUI = () => {
+const logoutUI = () => {
   containerApp.style.opacity = 0;
   labelWelcome.textContent = 'Log in to get started';
-  inputLoanAmount.value = '';
-  inputClosePin.value = inputCloseUsername.value = '';
-  inputTransferTo.value = inputTransferAmount.value = '';
-  inputLoginPin.value = inputLoginUsername.value = '';
-  inputLoginPin.blur(); // I think only need to blur the last item set (pin in this case)
+  resetInputs();
 };
+
+//SORT LOGIC FOR NUMBERS - .sort treats numbers like strings so we have to do our own compare function
+//above, b-a would be descending
+//return < 0, A,B (keep order)
+//return > 0, B,A (switch order)
+//Ascending
+// movements.sort(a,b) => {
+//  if(a > b) return 1 (any number > 0, switch order)
+//  if(a < b) return -1 (any number < 0, keep order)
+// }
+//
+
 /////////////////////////////////////////////////
 // EXECUTION
 //selectors: btnLogin, inputLoginUsername, inputLoginPin
 
-//CREATE USERNAMES
+// Create usernames, initial vars
 createUserNames(accounts);
 let currentAccount = {};
+let sortedMovements = [];
 
 //LOGIN BUTTON
 //since it's a form, pressing <enter> on the login fields will also trigger
@@ -201,7 +222,7 @@ btnLogin.addEventListener('click', function (e) {
   //option chaining (?) - if undefined, does nothing instead of error
   if (currentAccount?.pin === Number(inputLoginPin.value)) {
     //calc all movements, total, deposits, withdrawals, interest
-    updateUI(currentAccount);
+    updateUI();
     console.log(
       `balance = ${
         currentAccount.balance
@@ -210,7 +231,7 @@ btnLogin.addEventListener('click', function (e) {
 
     //display welcome message
     labelWelcome.textContent = `Welcome back, ${
-      currentAccount.owner.split(' ')[0] //split first, last, display first
+      currentAccount.owner.split(' ')[0] //split first, last, display first using index 0
     }`;
     //reveal page content
     containerApp.style.opacity = 100;
@@ -223,7 +244,7 @@ btnLogin.addEventListener('click', function (e) {
 
     //PIN INCORRECT
   } else {
-    inputLoginPin.value = '';
+    resetInputs();
     labelWelcome.textContent = `Incorrect login, please try again...`;
     containerApp.style.opacity = 0;
     console.log('bad login');
@@ -250,9 +271,30 @@ btnTransfer.addEventListener('click', function (e) {
     receiverAcct.movements.push(transferAmount);
     currentAccount.movements.push(-transferAmount);
     inputTransferTo.value = inputTransferAmount.value = '';
-    updateUI(currentAccount);
+    updateUI();
   } else {
+    resetInputs();
     console.log(`invalid transfer`);
+  }
+});
+
+// REQUEST LOAN BUTTON
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+
+  //One of the deposits must be at least 10% of the loan amount
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((mov) => mov >= amount * 0.1)
+  ) {
+    //Add movement
+    currentAccount.movements.push(amount);
+    updateUI();
+  } else {
+    resetInputs();
+    console.log(`invalid loan amount`);
   }
 });
 
@@ -274,11 +316,19 @@ btnClose.addEventListener('click', function (e) {
     accounts.splice(closeAcctIndex, 1);
 
     //reset UI
-    resetUI();
+    logoutUI();
   } else {
+    resetInputs();
     console.log(`account does not match current user`);
-    inputCloseUsername.value = inputClosePin.value = '';
-    inputCloseUsername.focus(); //if I don't set focus then blur, the user pin field get focus for some reason
-    inputCloseUsername.blur();
   }
+});
+
+//SORT BUTTON
+let sorted = true; //value when we click button the first time
+// could set intial to false, then use !sorted in the func...I prefer true for initial
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault(); //prevent page reload
+
+  displayAllMovements(currentAccount.movements, sorted);
+  sorted = !sorted; //toggle true/false on each click
 });
