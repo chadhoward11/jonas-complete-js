@@ -181,16 +181,22 @@ const logoutUI = () => {
   resetInputs();
 };
 
+//SORT MUTATES ORIGINAL ARRAY, SO CREATE A NEW ONE
 //SORT LOGIC FOR NUMBERS - .sort treats numbers like strings so we have to do our own compare function
-//above, b-a would be descending
+//
+// code snip from displayMovements:
+// const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;  //a-b is ascending - our bank display is showing in reverse order (most recent on top), so we need to sort ascending from bottom up...which means largest number is on top of list.  :)
+//
+// sort function is geared for ascending, so a-b < 0 means a is smaller, keep the order.  Changing to b-a means if b (second item of the two) is smaller (b-a < 0), keep the order, so descending.
 //return < 0, A,B (keep order)
 //return > 0, B,A (switch order)
 //Ascending
 // movements.sort(a,b) => {
 //  if(a > b) return 1 (any number > 0, switch order)
 //  if(a < b) return -1 (any number < 0, keep order)
-// }
 //
+// a-b would be ascending
+// b-a would be descending
 
 /////////////////////////////////////////////////
 // EXECUTION
