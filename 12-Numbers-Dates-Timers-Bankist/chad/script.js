@@ -95,7 +95,6 @@ const formatMovementDate = function (date, locale) {
     return Math.round(Math.abs(date1 - date2) / 1000 / 60 / 60 / 24);
   };
   const daysPassed = calcDaysPassed(new Date(), date);
-  console.log(daysPassed);
 
   if (daysPassed === 0) return 'Today';
   if (daysPassed === 1) return 'Yesterday';
@@ -174,26 +173,82 @@ const createUsernames = function (accs) {
 };
 createUsernames(accounts);
 
-const updateUI = function (acc) {
-  // Display movements
-  displayMovements(acc);
+// const updateUI = function (acc) {
+//   // Display movements
+//   displayMovements(acc);
 
-  // Display balance
-  calcDisplayBalance(acc);
+//   // Display balance
+//   calcDisplayBalance(acc);
 
-  // Display summary
-  calcDisplaySummary(acc);
+//   // Display summary
+//   calcDisplaySummary(acc);
+// };
+
+const updateUI = function () {
+  displayMovements(currentAccount);
+  calcDisplayBalance(currentAccount);
+  calcDisplaySummary(currentAccount);
+  resetInputs();
+};
+
+const resetInputs = () => {
+  inputLoanAmount.value = '';
+  inputClosePin.value = inputCloseUsername.value = '';
+  inputTransferTo.value = inputTransferAmount.value = '';
+  inputLoginPin.value = inputLoginUsername.value = '';
+  inputLoginPin.blur(); // I think only need to blur the last item set (inputLoginPin in this case)
+};
+
+const logoutUI = () => {
+  containerApp.style.opacity = 0;
+  labelWelcome.textContent = 'Log in to get started';
+  resetInputs();
+  console.log(`Logged out...`);
+};
+
+const startLogOutTimer = function () {
+  const tick = function () {
+    const min = String(Math.floor(time / 60)).padStart(2, '0');
+    const sec = (time % 60).toString().padStart(2, '0');
+
+    // in each call, print remaining time to UI
+    labelTimer.textContent = `${min}:${sec}`;
+
+    //When timer 0, logout user
+
+    if (time === 0) {
+      clearInterval(timer);
+      logoutUI();
+    }
+
+    //decrement timer
+    //need to do this 'after' checking for time===0 otherwise
+    //when time===1, we dec to 0, then check for 0 (now true)
+    //and it immediately logs out when there is really "1" second left
+    time--;
+  };
+
+  //set time to 5 min (300s)
+  let time = 30;
+
+  // Call the timer every second -
+  //setup the callback func for setInterval as a separate func.
+  //then we can call it once immediately, and then call it every second after that
+  //this avoids the initial delay of 1s before it starts the timer.
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
 };
 
 ///////////////////////////////////////
 // Event handlers
-let currentAccount;
+let currentAccount, timer;
 
 ///////////////////////////////////////
 // FAKE ALWAYS LOGGED IN
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
 
 //Experimenting with intl API
 
@@ -202,6 +257,8 @@ containerApp.style.opacity = 100;
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
   e.preventDefault();
+
+  labelTimer.textContent = '';
 
   currentAccount = accounts.find(
     acc => acc.username === inputLoginUsername.value
@@ -251,6 +308,10 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
+    //Timer - if it already exists (different user login) then clear and restart.
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
+
     // Update UI
     updateUI(currentAccount);
   }
@@ -281,24 +342,34 @@ btnTransfer.addEventListener('click', function (e) {
     // Update UI
     updateUI(currentAccount);
   }
+  //Reset timer
+  clearInterval(timer);
+  timer = startLogOutTimer();
 });
 
 btnLoan.addEventListener('click', function (e) {
-  e.preventDefault();
+  e.preventDefault(); //prevent page reload
+
+  //Reset timer
+  clearInterval(timer);
+  timer = startLogOutTimer();
 
   const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    // Add movement
-    currentAccount.movements.push(amount);
+    const loanWait = setTimeout(() => {
+      // Add movement
+      currentAccount.movements.push(amount);
 
-    //Add load date
-    currentAccount.movementsDates.push(new Date().toISOString());
+      //Add loan date
+      currentAccount.movementsDates.push(new Date().toISOString());
 
-    // Update UI
-    updateUI(currentAccount);
+      // Update UI
+      updateUI(currentAccount);
+    }, 3000);
+
+    inputLoanAmount.value = '';
   }
-  inputLoanAmount.value = '';
 });
 
 btnClose.addEventListener('click', function (e) {
@@ -311,8 +382,6 @@ btnClose.addEventListener('click', function (e) {
     const index = accounts.findIndex(
       acc => acc.username === currentAccount.username
     );
-    console.log(index);
-    // .indexOf(23)
 
     // Delete account
     accounts.splice(index, 1);
@@ -334,3 +403,24 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
+
+// setInterval
+// const myIntervalTest = setInterval(function () {
+//   const now = new Date();
+//   const clockHour = now.getHours().toString();
+//   const clockMin = now.getMinutes().toString();
+//   const clockSec = now.getSeconds().toString();
+//   const myClock = `${clockHour.padStart(2, '0')}:${clockMin.padStart(
+//     2,
+//     '0'
+//   )}:${clockSec.padStart(2, '0')}`;
+//   console.log(`clock: ${myClock}`);
+//   if (clockSec === '59') clearInterval(myIntervalTest);
+// }, 1000);
+
+// const initialTime = getSeconds();
+// const countdownTimer = setInterval(function () {
+//   const timerDate = new Date();
+//   const timerSec = initialTime.getSeconds() - timerDate.getSeconds();
+//   console.log(`timerSec: ${timerSec}`);
+// }, 1000);
